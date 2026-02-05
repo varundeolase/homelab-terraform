@@ -1,30 +1,3 @@
-
-# Generating SSH key pair
-resource "tls_private_key" "ec2_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-# Creating AWS key pair
-resource "aws_key_pair" "ec2_key_pair" {
-  key_name   = "ec2-ssh-key"
-  public_key = tls_private_key.ec2_key.public_key_openssh
-}
-
-# Saving private key to local file
-resource "local_file" "private_key" {
-  content         = tls_private_key.ec2_key.private_key_pem
-  filename        = "/Users/varun/work/Antigravity Projects/homelab-terraform/ec2-ssh-key.pem"
-  file_permission = "0600"
-}
-
-# Saving private key to local file
-resource "local_file" "public_key" {
-  content         = tls_private_key.ec2_key.public_key_openssh
-  filename        = "/Users/varun/work/Antigravity Projects/homelab-terraform/ec2-ssh-key-pub.pem"
-  file_permission = "0600"
-}
-
 resource "aws_vpc" "custom_vpc" {
   cidr_block           = "10.0.0.0/28"
   enable_dns_support   = true
@@ -136,7 +109,7 @@ resource "aws_security_group" "ec2_sg" {
 resource "aws_instance" "ec2_instance" {
   ami                    = "ami-062f0cc54dbfd8ef1"
   instance_type          = "t2.micro"
-  key_name               = aws_key_pair.ec2_key_pair.key_name
+  key_name               = "ec2-ssh-key"
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   subnet_id              = aws_subnet.public_subnet.id
   associate_public_ip_address = true
